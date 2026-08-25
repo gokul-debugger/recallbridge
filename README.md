@@ -2,6 +2,8 @@
 
 RecallBridge is a source-linked product recall search and watchlist application. It brings recent consumer product, food, and medical device recall records into one normalized interface, then explains why a saved product may match a recall.
 
+[![Open RecallBridge](https://img.shields.io/badge/Live_App-Open_RecallBridge-17383B?style=for-the-badge)](https://recallbridge.onrender.com/)
+
 > RecallBridge is an educational open-source project, not an official alerting service. Always confirm a result with the publishing agency before taking action.
 
 ![RecallBridge recall browser](docs/screenshots/recallbridge-browse.png)
@@ -128,6 +130,10 @@ built React application. In hosted deployments, an asynchronous refresh task
 updates the SQLite recall index from the official sources every six hours while
 keeping the last successful records available if a source is temporarily down.
 
+**Live application:** [recallbridge.onrender.com](https://recallbridge.onrender.com/)
+
+**API documentation:** [recallbridge.onrender.com/docs](https://recallbridge.onrender.com/docs)
+
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gokul-debugger/recallbridge)
 
 Render's free web services use an ephemeral filesystem and may spin down while
@@ -154,7 +160,7 @@ Current automated coverage includes connector normalization, search and matching
 
 - Watchlist products stay in the current browser's local storage.
 - No user account, analytics tracker, or product identifier is sent to a third party by the client.
-- The backend only requests public recall records from the listed agencies during an explicit sync.
+- The backend requests only public recall records from the listed agencies during an explicit local sync or a configured hosted refresh.
 - openFDA notes that enforcement reports should not be treated as an official alerting or recall lifecycle service. RecallBridge preserves source links and presents the data as a searchable index.
 
 Please report security concerns using the process in [SECURITY.md](SECURITY.md).
