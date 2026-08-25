@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: recallbridge
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: RECALLBRIDGE_AUTO_SYNC
+        value: "true"
+      - key: RECALLBRIDGE_SYNC_INTERVAL
+        value: "21600"

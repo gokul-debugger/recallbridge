@@ -1,0 +1,11 @@
+.git
+.github
+.venv
+node_modules
+dist
+test-results
+playwright-report
+backend/data/*.db
+__pycache__
+*.pyc
+.DS_Store

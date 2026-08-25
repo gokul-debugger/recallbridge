@@ -121,6 +121,19 @@ npm run dev
 
 Open [http://127.0.0.1:5173](http://127.0.0.1:5173). API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
+## Deployment
+
+RecallBridge ships as one Docker service: FastAPI serves both the API and the
+built React application. In hosted deployments, an asynchronous refresh task
+updates the SQLite recall index from the official sources every six hours while
+keeping the last successful records available if a source is temporarily down.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gokul-debugger/recallbridge)
+
+Render's free web services use an ephemeral filesystem and may spin down while
+idle. The recall index is therefore rebuilt after a restart. A production
+deployment should set `RECALLBRIDGE_DB` to a persistent volume path.
+
 ## Quality Checks
 
 ```bash

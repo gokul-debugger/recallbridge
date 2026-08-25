@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+import asyncio
+import logging
+import os
+from contextlib import asynccontextmanager, suppress
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .matching import find_matches
 from .models import (
@@ -22,12 +27,39 @@ from .storage import (
     recall_stats,
     search_recalls,
 )
+from .syncing import sync_official_recalls
+
+logger = logging.getLogger(__name__)
+
+
+def _env_flag(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes"}
+
+
+async def _refresh_recalls(interval_seconds: int) -> None:
+    while True:
+        try:
+            stored = await sync_official_recalls()
+            logger.info("Official recall sync completed: %s", stored)
+        except Exception:
+            logger.exception("Official recall sync failed; existing records remain available")
+        await asyncio.sleep(interval_seconds)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     initialize_database()
-    yield
+    refresh_task: asyncio.Task[None] | None = None
+    if _env_flag("RECALLBRIDGE_AUTO_SYNC"):
+        interval = max(900, int(os.environ.get("RECALLBRIDGE_SYNC_INTERVAL", "21600")))
+        refresh_task = asyncio.create_task(_refresh_recalls(interval))
+    try:
+        yield
+    finally:
+        if refresh_task:
+            refresh_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await refresh_task
 
 
 app = FastAPI(
@@ -86,3 +118,11 @@ def match_product(request: MatchRequest) -> MatchResponse:
 @app.get("/api/stats", response_model=RecallStats)
 def stats() -> RecallStats:
     return RecallStats.model_validate(recall_stats())
+
+
+frontend_dir = os.environ.get("RECALLBRIDGE_FRONTEND_DIR")
+if frontend_dir:
+    frontend_path = Path(frontend_dir)
+    if not frontend_path.is_dir():
+        raise RuntimeError(f"Frontend directory does not exist: {frontend_path}")
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
